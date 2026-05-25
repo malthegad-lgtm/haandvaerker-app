@@ -42,17 +42,21 @@ function RequireAuth({ children }) {
 }
 
 function RequireCompany({ children }) {
-  const { profile, loading } = useAuth();
+  const { profile, company, loading } = useAuth();
   if (loading) return <Splash />;
+  // No company linked yet → create one
   if (profile && !profile.company_id) return <Navigate to="/onboarding" replace />;
+  // Company exists but onboarding not completed → finish wizard
+  if (company && company.onboarding_completed === false) return <Navigate to="/onboarding" replace />;
   return children;
 }
 
 function PublicOnly({ children }) {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, company, loading } = useAuth();
   if (loading) return <Splash />;
   if (session) {
-    if (profile && !profile.company_id) return <Navigate to="/onboarding" replace />;
+    if (!profile?.company_id) return <Navigate to="/onboarding" replace />;
+    if (company && company.onboarding_completed === false) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/" replace />;
   }
   return children;
